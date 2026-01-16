@@ -12,9 +12,16 @@ export const downloadCanvasToImage = () => {
 
 export const reader = (file) =>
   new Promise((resolve, reject) => {
-    const fileReader = new FileReader();
-    fileReader.onload = () => resolve(fileReader.result);
-    fileReader.readAsDataURL(file);
+    try {
+      if (!file) {
+        reject(new Error("No file provided"));
+        return;
+      }
+      const url = URL.createObjectURL(file);
+      resolve(url);
+    } catch (error) {
+      reject(error);
+    }
   });
 
 export const getContrastingColor = (color) => {

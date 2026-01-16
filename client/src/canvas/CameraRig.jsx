@@ -9,7 +9,7 @@ const CameraRig = ({ children }) => {
   const group = useRef();
   const snap = useSnapshot(state);
 
-  useFrame((state, delta) => {
+  useFrame((frameState, delta) => {
     const isBreakpoint = window.innerWidth <= 1260;
     const isMobile = window.innerWidth <= 600;
 
@@ -23,16 +23,15 @@ const CameraRig = ({ children }) => {
       else targetPosition = [0, 0, 2];
     }
 
-    // set model camera position
-    easing.damp3(state.camera.position, targetPosition, 0.25, delta)
+    // set model camera position only during intro
+    if (snap.intro) {
+      easing.damp3(frameState.camera.position, targetPosition, 0.25, delta)
+    }
 
-    // set the model rotation smoothly
-    easing.dampE(
-      group.current.rotation,
-      [state.pointer.y / 10, -state.pointer.x / 5, 0],
-      0.25,
-      delta
-    )
+    // Smooth rotation animation when activeRegion changes (only when not auto-rotating)
+    if (group.current && !snap.isAutoRotate) {
+      easing.damp(group.current.rotation, 'y', snap.targetRotation, 0.25, delta)
+    }
   })
 
 

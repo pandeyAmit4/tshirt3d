@@ -10,8 +10,12 @@ export const EditorTabs = [
     icon: fileIcon,
   },
   {
-    name: "aipicker",
-    icon: ai,
+    name: "fabric",
+    icon: "/fabric.png",
+  },
+  {
+    name: "text",
+    icon: "/text.png",
   },
 ];
 
@@ -41,5 +45,9 @@ export const DecalTypes = {
   full: {
     stateProperty: "fullDecal",
     filterTab: "stylishShirt",
+  },
+  text: {
+    stateProperty: "text",
+    filterTab: "logoShirt", // Reuse logo shirt filter tab for now
   },
 };

@@ -41,12 +41,14 @@ const Home = () => {
                         </p>
                     </motion.div>
 
-                    <CustomButton
+                    <div>
+                        <CustomButton
                         type='filled'
                         title='Customize'
                         handleClick={()=> state.intro = false}
                         customStyles='w-fit px-4 py-2.5 font-bold text-sm'
                     />
+                    </div>
                 </motion.div>
 
                 {/* <motion.footer className='w-full text-center drop-shadow-lg mt-8 text-xs' {...slideAnimation('up')}>

@@ -2,16 +2,14 @@ import React, {useState, useEffect} from 'react'
 import {AnimatePresence, motion} from 'framer-motion';
 import { useSnapshot } from 'valtio';
 import config from '../config/config'
-import state from '../store';
+import state, { resetState } from '../store';
 import {download} from '../assets'
 import {downloadCanvasToImage, reader} from '../config/helpers'
 import { EditorTabs, DecalTypes, FilterTabs, Download } from '../config/constants';
 import {fadeAnimation, slideAnimation} from '../config/motion'
-import Tab from '../components/Tab'
-import CustomButton from '../components/CustomButton'
-import ColorPicker from '../components/ColorPicker'
-import FilePicker from '../components/FilePicker'
-import AIPicker from '../components/AIPicker'
+import { AIPicker, ColorPicker, CustomButton, FilePicker, Tab, TextPicker } from '../components';
+import FabricPicker from '../components/FabricPicker';
+
 
 
 const Customizer = () => {
@@ -46,10 +44,15 @@ const Customizer = () => {
           generatingImg={generatingImg}
           handleSubmit={handleSubmit}
         />
+      case "fabricpicker":
+        return <FabricPicker />
+      case "text":
+        return <TextPicker />
       default:
         return null;
     }
   }
+
 
   const handleSubmit = async (type) => {
     if(!prompt) return alert("Please enter the prompt!")
@@ -57,7 +60,11 @@ const Customizer = () => {
     try {
       setGeneratingImg(true)
 
-      const response = await fetch('https://tshirt3d-fnoy.vercel.app/api/v1/dalle', {
+      const backendUrl = window.location.hostname === 'localhost' 
+        ? config.development.backendUrl 
+        : config.production.backendUrl;
+
+      const response = await fetch(backendUrl, {
         method:'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -68,6 +75,7 @@ const Customizer = () => {
       const data = await response.json()
 
       handleDecal(type, `data:image/png;base64,${data.photo}`)
+
 
     } catch (error) {
       alert(error)
@@ -132,12 +140,25 @@ const Customizer = () => {
             <div className='flex items-center min-h-screen'>
               <div className='editortabs-container tabs'>
                 {EditorTabs.map((tab) => (
-                  <Tab
+                  <Tab 
                     key={tab.name}
                     tab={tab}
-                    handleClick={()=>{setActiveEditorTab(tab.name)}}
+                    handleClick={() => {
+                      // Map tab names to match generateTabContent switch cases
+                      const nameMap = { "fabric": "fabricpicker" };
+                      const activeName = nameMap[tab.name] || tab.name;
+                      // Toggle: if already active, close it
+                      if (activeEditorTab === activeName) {
+                        setActiveEditorTab('');
+                      } else {
+                        setActiveEditorTab(activeName);
+                      }
+                    }}
                   />
                 ))}
+
+
+
 
                 {generateTabContent()}
               </div>
@@ -153,6 +174,22 @@ const Customizer = () => {
               title='Go Back'
               handleClick={()=> state.intro = true}
               customStyles='w-fit px-4 py-2.5 font-bold text-sm'
+            />
+            <CustomButton
+              type='filled'
+              title={snap.isAutoRotate ? 'Pause' : 'Play'}
+              handleClick={()=> state.isAutoRotate = !state.isAutoRotate}
+              customStyles='w-fit px-4 py-2.5 font-bold text-sm ml-2'
+            />
+            <CustomButton
+              type='outline'
+              title='Start Fresh'
+              handleClick={() => {
+                if (confirm('Reset all customizations?')) {
+                  resetState();
+                }
+              }}
+              customStyles='w-fit px-4 py-2.5 font-bold text-sm ml-2'
             />
           </motion.div>
 
